@@ -199,7 +199,7 @@ size_t rijndael_aes(const size_t seed)
     prepare_matrix(state_matrix, seed);
     xor(state_matrix, &key);
 
-    for (int32_t round = 0; round < AES_ROUNDS_256; round++)
+    for (int32_t round = 0; round < 1; round++)
     {
         sub_bytes(state_matrix);
         // printf("(AFTER SUB_BYTES)\n");
@@ -237,15 +237,15 @@ size_t rijndael_aes(const size_t seed)
 
     }
 
-    printf("(AFTER ALL)\n");
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            printf("%d ", state_matrix[i][j]);
-        }
-        printf("\n");
-    }
+    // printf("(AFTER ALL)\n");
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     for (int j = 0; j < 4; j++)
+    //     {
+    //         printf("%d ", state_matrix[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     return 0;
 }
