@@ -1,7 +1,9 @@
 #include <stdio.h>
 
 #include "../include/define.h"
+#include "../include/rng.h"
 #include "../include/utils.h"
+
 // Программа принимает три параметра командной строки, типа:
 
 // ./program --file <filename> --numbilets 20 --parameter 42
@@ -37,12 +39,23 @@ int main(int argc, char *argv[])
         return code;
     }
 
-    
     printf("INPUT: filename --- %s\n", usr_input.filename);
     printf("INPUT: n_tickets --- %d\n", usr_input.n_tickets);
-    printf("INPUT: param --- %d\n", usr_input.param);
+    printf("INPUT: param --- %ld\n", usr_input.param);
+    printf("sizeof(size_t) = %ld\n", sizeof(size_t));
 
-    // proccess_data(argc, argv);
+    // printf("%lx\n", usr_input.param);
+    // printf("%b\n", usr_input.param);
+
+    char matrix[4][4] = { 0 };
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            printf("(BEFORE) MATRIX[%d][%d] = %d\n", i, j, matrix[i][j]);
+    // prepare_matrix(matrix, usr_input.param);
+    
+    // printf("AES_LOOKUP = %d\n", AES_LOOKUP_TABLE[0]);
+    rijndael_aes(usr_input.param);
+    // proccess_data(&usr_input);
 
     return SUCCESS;
 }

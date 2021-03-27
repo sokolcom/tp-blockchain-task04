@@ -19,10 +19,10 @@ app.out: $(OBJ_SRC)
 	$(CC) -o $@ $^
 
 test: app.out
-	./$^ --file data/students_30.txt --numbilets 20 --parameter 42
+	./$^ --file data/students_30.txt --numbilets 20 --parameter 424124
 
 oops: app.out
-	./$^ --file data/students_30.txt --numbilets 20 --parameter 42 
+	./$^ --file data/students_30.txt --numbilets -1 --parameter 42 
 
 clean:
 	$(RM) -rf *.out src/*.o
