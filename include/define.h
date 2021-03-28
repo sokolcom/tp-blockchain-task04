@@ -2,6 +2,7 @@
 #define _DEFINE_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 
 #define SUCCESS 0
@@ -9,6 +10,7 @@
 #define N_ARGS_ERROR 10
 #define FILE_NOT_FOUND_ERROR 20
 #define N_TICKETS_ERROR 30
+#define ALLOCATION_ERROR 40
 
 #define OPTION_FILE "--file"
 #define OPTION_NTICKETS "--numbilets"
@@ -32,12 +34,6 @@ typedef struct
 {
     uint8_t byte[16];
 } uint128_t;
-
-typedef struct 
-{
-    char name[MAX_STRING_LENGTH];
-    uint32_t n;
-} student_t;
 
 typedef struct 
 {

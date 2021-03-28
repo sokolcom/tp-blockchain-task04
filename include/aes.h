@@ -1,6 +1,6 @@
 #ifndef _AES_H_
 #define _AES_H_
 
-size_t rijndael_aes(const size_t seed);
+uint32_t rijndael_aes(const size_t _seed);
 
 #endif

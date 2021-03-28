@@ -1,7 +1,9 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../include/define.h"
+#include "../include/aes.h"
+
 
 
 // 256bit key: 0xD14A98557E9B6838C8A74BB62033E8198914D2B394405F96FC7C4B8F2A5DDCEF 
@@ -65,8 +67,9 @@ static uint128_t create_key_128bit(const char *const *const key_string)
 
 static uint8_t mult(uint8_t a, uint8_t b)
 {
-    uint16_t result = 0x0;
+    // Multiplication in the Galois field
 
+    uint16_t result = 0x0;
     switch (a)
     {
         case 1:
@@ -124,6 +127,20 @@ static void copy_matrix(uint8_t dest[][AES_MATRIX_SIZE], uint8_t src[][AES_MATRI
     }
 }
 
+static uint32_t yield_value(uint8_t matrix[][AES_MATRIX_SIZE])
+{
+    // Get last 4 bytes (first column) and tranform to uint32
+    // Make sure ticket no. hasn't exceeded its limit (e.g. 1)
+    
+    uint32_t value = 0x0;
+    for (int32_t row = 0; row < 4; row++)
+    {
+        value = (value << BITS_PER_BYTE) | matrix[row][0];
+    }
+
+    return value;
+}
+
 static void prepare_matrix(uint8_t matrix[][AES_MATRIX_SIZE], const size_t seed)
 {
     int32_t flag = TRUE;
@@ -146,7 +163,6 @@ static void prepare_matrix(uint8_t matrix[][AES_MATRIX_SIZE], const size_t seed)
             {
                 matrix[row][col] = 0x0;
             }
-            printf("MATRIX[%d][%d] = %d\n", row, col, matrix[row][col]);
         }
     }
 }
@@ -187,65 +203,26 @@ static void mix_columns(uint8_t matrix[][AES_MATRIX_SIZE])
     copy_matrix(matrix, result);
 }
 
-size_t rijndael_aes(const size_t seed)
-{
-    const uint128_t key = create_key_128bit(AES_KEY_HEX);
-    // for (int i = 0; i < 32; i++)
-    //     printf("%x", key.byte[i]);
-    // printf("\n");
-    // return 0;
-
-    uint8_t state_matrix[AES_MATRIX_SIZE][AES_MATRIX_SIZE] = { 0 };
-    prepare_matrix(state_matrix, seed);
-    xor(state_matrix, &key);
-
-    for (int32_t round = 0; round < 1; round++)
+uint32_t rijndael_aes(const size_t seed)
+{   
+    static uint128_t key; 
+    static uint8_t state_matrix[AES_MATRIX_SIZE][AES_MATRIX_SIZE] = { 0 };
+    static int32_t first_round_flag = TRUE;
+    
+    if (first_round_flag)
     {
-        sub_bytes(state_matrix);
-        // printf("(AFTER SUB_BYTES)\n");
-        // for (int i = 0; i < 4; i++)
-        // {
-        //     for (int j = 0; j < 4; j++)
-        //     {
-        //         printf("%d ", state_matrix[i][j]);
-        //     }
-        //     printf("\n");
-        // }
-
-        shift_rows(state_matrix);
-        // printf("(AFTER SHIFT_ROWS)\n");
-        // for (int i = 0; i < 4; i++)
-        // {
-        //     for (int j = 0; j < 4; j++)
-        //     {
-        //         printf("%d ", state_matrix[i][j]);
-        //     }
-        //     printf("\n");
-        // }
-        (round < AES_ROUNDS_256 - 1) ? mix_columns(state_matrix) : NULL;
-        // printf("(AFTER MIX_COLUMNS)\n");
-        // for (int i = 0; i < 4; i++)
-        // {
-        //     for (int j = 0; j < 4; j++)
-        //     {
-        //         printf("%d ", state_matrix[i][j]);
-        //     }
-        //     printf("\n");
-        // }
-        // break;
+        key = create_key_128bit(AES_KEY_HEX);
+        prepare_matrix(state_matrix, seed);
         xor(state_matrix, &key);
 
+        first_round_flag = FALSE;
     }
 
-    // printf("(AFTER ALL)\n");
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     for (int j = 0; j < 4; j++)
-    //     {
-    //         printf("%d ", state_matrix[i][j]);
-    //     }
-    //     printf("\n");
-    // }
+    sub_bytes(state_matrix);
+    shift_rows(state_matrix);
+    mix_columns(state_matrix);
+    xor(state_matrix, &key);
 
-    return 0;
+    uint32_t value = yield_value(state_matrix);
+    return value;
 }

@@ -6,33 +6,65 @@
 
 #include "../include/define.h"
 #include "../include/utils.h"
-// #include "../include/utils.h"
 
 
-// static student_t *create_array(const size_t length, const char *const src_filename)
-// {
-//     student_t *array = (student_t *)calloc(length, sizeof(student_t));
-//     if (!array)
-//     {
-//         return array;
-//     }
 
-//     // FILE *src = fopen(src_filename, "r");
+size_t get_length(const char *const filename)
+{
+    size_t length = 1;
+
+    FILE *src = fopen(filename, "r");
+    for (char c = getc(src); c != EOF; c = getc(src))
+    {
+        if (c == '\n')
+        {
+            length++;
+        }
+    }
+    fclose(src);
     
-//     // for (size_t i = 0; i < length; i++)
-//     // {
-//     //     array[i] = { .name = , };
-//     // }
+    return length;
+}
 
-//     // fclose(src);
+char **create_students_array(const size_t length, const char *const src_filename)
+{
+    char **array = (char **)calloc(length, sizeof(char *));
+    if (!array)
+    {
+        return array;
+    }
 
-//     return array;
-// }
+    FILE *src = fopen(src_filename, "r");
+    
+    char newline;
+    for (size_t i = 0; i < length; i++)
+    {
+        char temp[MAX_STRING_LENGTH] = { 0 }; 
+        fscanf(src, "%[^\n]", temp);
 
-// static void free_array(student_t *const array)
-// {
-//     free(array);
-// }
+        array[i] = (char *)calloc(strlen(temp), sizeof(char));
+        if (!array[i])
+        {
+            for (size_t k = 0; k < i; k++)
+            {
+                free(array[i]);
+            }
+            free(array);
+            return NULL;
+        }
+
+        strcpy(array[i], temp);
+        fscanf(src, "%c", &newline);  // Jump to the next line
+    }
+
+    fclose(src);
+    return array;
+}
+
+uint32_t *create_yielded_array(const size_t length)
+{
+    return (uint32_t *)calloc(length, sizeof(uint32_t));
+}
 
 static int32_t file_exists(const char *const filename)
 {
@@ -96,26 +128,6 @@ int32_t load_args(input_t *const usr_input, const int argc, char *argv[])
     return SUCCESS;
 }
 
-// void process_data(const input_t *const usr_input)
-// {
-//     const size_t students_amount  = ;
-
-
-
-//     student_t *distr_array = create_array(students_amount, usr_input->filename);
-
-//     print_array(stdout, distr_array, students_amount);
-//     free_array(distr_array);
-// }
-
-void print_array(FILE *const stream, const student_t *const array, const size_t length)
-{
-    for (size_t i = 0; i < length; i++)
-    {
-        fprintf(stream, "%s\t%d\n", array[i].name, array[i].n);
-    }
-}
-
 void print_error(FILE *const stream, const int32_t error_code)
 {
     switch (error_code)
@@ -135,8 +147,17 @@ void print_error(FILE *const stream, const int32_t error_code)
         case N_TICKETS_ERROR:
             fprintf(stream, "ERROR: invalid amout of the tickets (%s < 1)!\n", OPTION_NTICKETS);
             break;
+        
+        case ALLOCATION_ERROR:
+            fprintf(stream, "ERROR: failed to allocate data!\n");
+            break;
 
         default:
             fprintf(stream, "Oops!\nUnknown error!\n");
     }
+}
+
+void print_distr(FILE *const stream, char *const *const array, const uint32_t idx, const uint32_t ticket)
+{
+    fprintf(stream, "%-50s\t\t%d\n", array[idx], ticket);
 }
