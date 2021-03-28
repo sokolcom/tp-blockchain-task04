@@ -39,10 +39,7 @@ char **create_students_array(const size_t length, const char *const src_filename
     char newline;
     for (size_t i = 0; i < length; i++)
     {
-        char temp[MAX_STRING_LENGTH] = { 0 }; 
-        fscanf(src, "%[^\n]", temp);
-
-        array[i] = (char *)calloc(strlen(temp), sizeof(char));
+        array[i] = (char *)calloc(MAX_STRING_LENGTH, sizeof(char));
         if (!array[i])
         {
             for (size_t k = 0; k < i; k++)
@@ -53,7 +50,7 @@ char **create_students_array(const size_t length, const char *const src_filename
             return NULL;
         }
 
-        strcpy(array[i], temp);
+        fscanf(src, "%[^\n]", array[i]);
         fscanf(src, "%c", &newline);  // Jump to the next line
     }
 
