@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sys/stat.h>
 
+#include <openssl/evp.h>
+
 #include "../include/define.h"
 #include "../include/utils.h"
 
@@ -148,6 +150,10 @@ void print_error(FILE *const stream, const int32_t error_code)
         case ALLOCATION_ERROR:
             fprintf(stream, "ERROR: failed to allocate data!\n");
             break;
+        
+        case OPENSSL_ERROR:
+            fprintf(stream, "ERROR: OpenSSL error!\n");
+            break;
 
         default:
             fprintf(stream, "Oops!\nUnknown error!\n");
@@ -157,4 +163,58 @@ void print_error(FILE *const stream, const int32_t error_code)
 void print_distr(FILE *const stream, char *const *const array, const uint32_t idx, const uint32_t ticket)
 {
     fprintf(stream, "%-50s\t\t%d\n", array[idx], ticket);
+}
+
+static int32_t generate_sha256(unsigned char **digest, const char *message)
+{
+    EVP_MD_CTX *mdctx;
+
+	if(!(mdctx = EVP_MD_CTX_new()))
+    {
+        return OPENSSL_ERROR;
+    }
+
+	if (1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL))
+	{
+        return OPENSSL_ERROR;
+    }
+
+	if (1 != EVP_DigestUpdate(mdctx, (unsigned char *)message, strlen(message)))
+	{
+        return OPENSSL_ERROR;
+    }
+
+	if ((*digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(EVP_sha256()))) == NULL)
+	{
+        return OPENSSL_ERROR;
+    }
+
+    unsigned int len = 32;
+	if (1 != EVP_DigestFinal_ex(mdctx, *digest, &len))
+	{
+        return OPENSSL_ERROR;
+    }
+
+	EVP_MD_CTX_free(mdctx);
+
+    return SUCCESS;
+}
+
+int32_t hash_student(uint128_t *const hash, const char* msg)
+{
+    unsigned char md[32] = { 0 };
+    unsigned char *md_ptr = md;
+
+    if (generate_sha256(&md_ptr, msg))
+    {
+        return OPENSSL_ERROR;
+    }
+    
+    for (int i = 0; i < 16; i++)
+    {
+        hash->byte[i] = *md_ptr;
+        md_ptr++;
+    }
+
+    return SUCCESS;
 }

@@ -11,6 +11,7 @@
 #define FILE_NOT_FOUND_ERROR 20
 #define N_TICKETS_ERROR 30
 #define ALLOCATION_ERROR 40
+#define OPENSSL_ERROR 50
 
 #define OPTION_FILE "--file"
 #define OPTION_NTICKETS "--numbilets"

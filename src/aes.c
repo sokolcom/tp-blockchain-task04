@@ -55,15 +55,15 @@ static void xor(uint8_t matrix[][AES_MATRIX_SIZE], const uint128_t *const key)
     }
 }
 
-static uint128_t create_key_128bit(const char *const *const key_string)
-{
-    uint128_t key;
-    for (int32_t i = 0; i < 16; i++)
-    {
-        key.byte[i] = strtoull(key_string[i], NULL, 2);
-    }
-    return key;
-}
+// static uint128_t create_key_128bit(const char *const *const key_string)
+// {
+//     uint128_t key;
+//     for (int32_t i = 0; i < 16; i++)
+//     {
+//         key.byte[i] = strtoull(key_string[i], NULL, 2);
+//     }
+//     return key;
+// }
 
 static uint8_t mult(uint8_t a, uint8_t b)
 {
@@ -203,25 +203,20 @@ static void mix_columns(uint8_t matrix[][AES_MATRIX_SIZE])
     copy_matrix(matrix, result);
 }
 
-uint32_t rijndael_aes(const size_t seed)
+uint32_t rijndael_aes(const size_t seed, const uint128_t *const key, const int32_t first_round_flag)
 {   
-    static uint128_t key; 
     static uint8_t state_matrix[AES_MATRIX_SIZE][AES_MATRIX_SIZE] = { 0 };
-    static int32_t first_round_flag = TRUE;
     
     if (first_round_flag)
     {
-        key = create_key_128bit(AES_KEY_HEX);
         prepare_matrix(state_matrix, seed);
-        xor(state_matrix, &key);
-
-        first_round_flag = FALSE;
+        xor(state_matrix, key);
     }
 
     sub_bytes(state_matrix);
     shift_rows(state_matrix);
     mix_columns(state_matrix);
-    xor(state_matrix, &key);
+    xor(state_matrix, key);
 
     uint32_t value = yield_value(state_matrix);
     return value;

@@ -10,7 +10,7 @@ OBJ_SRC = $(patsubst %.c, %.o, $(wildcard $(SRC_C)))
 
 
 app.out: $(OBJ_SRC)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ -lcrypto
 
 test: app.out
 	./$^ --file data/students_30.txt --numbilets 20 --parameter 424124

@@ -23,14 +23,25 @@ int32_t distribute_tickets(const input_t *const usr_input)
     uint32_t *yielded_array = create_yielded_array(usr_input->n_tickets);
     if (!yielded_array)
     {
+        free(students_array);
         return ALLOCATION_ERROR;
     }
 
     int32_t ticket_counter = 0;
     uint32_t student = 0;
+    uint128_t hash;
+    int32_t fr_flag = TRUE;
     while (student < amount)
     {
-        uint32_t ticket_no = rijndael_aes(usr_input->param) % usr_input->n_tickets;
+        if (hash_student(&hash, students_array[student]))
+        {
+            free(students_array);
+            free(yielded_array);
+            return OPENSSL_ERROR;
+        }
+
+        uint32_t ticket_no = rijndael_aes(usr_input->param, &hash, fr_flag) % usr_input->n_tickets;
+        fr_flag = FALSE;
 
         // Check if all tickets were already distributed && if so check if max_same_tickets were exceeded
         if (((ticket_counter < usr_input->n_tickets) && !yielded_array[ticket_no]) ||
@@ -40,6 +51,7 @@ int32_t distribute_tickets(const input_t *const usr_input)
             yielded_array[ticket_no]++;
             student++;
             ticket_counter++;
+            fr_flag = TRUE;
         }
     }
 
